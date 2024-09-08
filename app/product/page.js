@@ -8,7 +8,7 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState([]);
 
-  async function fetchProducs() {
+  async function fetchProducts() {
     const data = await fetch("http://localhost:3000/api/product");
     const p = await data.json();
     setProducts(p);
@@ -27,12 +27,21 @@ export default function Home() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    }).then(() => fetchProducs());
+    }).then(() => fetchProducts());
   };
+
+  const deleteById = (id) => async () => {
+    if (!confirm("Are you sure?")) return;
+    
+    await fetch(`http://localhost:3000/api/product/${id}`, {
+      method: "DELETE",
+    });
+    fetchProducts();
+  }
 
   useEffect(() => {
     fetchCategory();
-    fetchProducs();
+    fetchProducts();
   }, []);
 
   return (
@@ -83,7 +92,7 @@ export default function Home() {
                 className="border border-black w-full"
               >
                 {category.map((c) => (
-                  <option value={c._id}>{c.name}</option>
+                  <option key={c._id} value={c._id}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -99,10 +108,11 @@ export default function Home() {
       </div>
       <div className="border m-4 bg-slate-300 flex-1 w-64">
         <h1 className="text-2xl">Products ({products.length})</h1>
-        <ul class="list-disc ml-8">
-          {products.map &&
+        <ul className="list-disc ml-8">
+          {
             products.map((p) => (
               <li key={p._id}>
+                <button className="border border-black p-1/2" onClick={deleteById(p._id)}>❌</button>{' '}
                 <Link href={`/product/${p._id}`} className="font-bold">
                   {p.name}
                 </Link>{" "}
